@@ -107,11 +107,12 @@ function generarlogin(){
         var email = document.getElementById("email").value;
         var password = document.getElementById('password').value;
         const auth = getAuth();
-        //alert(`auth: ${auth} email: ${email}   password: ${password}`)
-        //signInWithEmailAndPassword(auth,email, password)
-        //.then(function(user) {
-        //    console.log("User logged in: ", user);
-        //    alert("User logged in: ", user);
+        if(email.includes('@')){
+        alert(`auth: ${auth} email: ${email}   password: ${password}`)
+        signInWithEmailAndPassword(auth,email, password)
+        .then(function(user) {
+            console.log("User logged in: ", user);
+        alert("User logged in: ", user);
             main.textContent = "";
             main.appendChild(audio);
         audio.play();
@@ -119,12 +120,16 @@ function generarlogin(){
         generarTabla();
         generarDado();
             // Redirigir al panel de usuario o mostrar un mensaje
-        //})
-    /*.catch(function(error) {
+        })
+    .catch(function(error) {
         console.log("Error logging in: ", error);
         alert("Error logging in: ", error)
         // Mostrar mensaje de error
-    });*/
+    })
+}
+else{
+    alert("correo electrónico no válido")
+};
         
     });
     contenedorLogin.appendChild(formulogin);
@@ -182,16 +187,17 @@ function generarRegistro(){
 function registro() {
     console.log("REGISTER");
   alert("REGISTER")
-    var email = document.getElementById("email").value;;
+    var email = document.getElementById('email').value;;
     var password = document.getElementById('password').value;
     const auth = getAuth();
     alert(`auth: ${auth} email: ${email}   password: ${password}`)
-    createUserWithEmailAndPassword(auth,email, password)
-    .then(function(user) {
-        console.log("User registered: ", user);
-        // Redirigir al panel de usuario o mostrar un mensaje
-        alert("User registered: ", user)
-        return true;
+    if(email.includes('@')){
+        createUserWithEmailAndPassword(auth,email, password)
+            .then(function(user) {
+            console.log("User registered: ", user);
+            // Redirigir al panel de usuario o mostrar un mensaje
+            alert("User registered: ", user)
+            return true;
     })
     .catch(function(error) {
         console.log("Error registering: ", error);
@@ -199,6 +205,11 @@ function registro() {
         alert("Error registering: ", error);
         return false;
     });
+    }
+    else{
+        alert("correo electrçonico no válido")
+    }
+    
 }
 
 
