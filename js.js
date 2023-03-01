@@ -559,10 +559,12 @@ let p2 = document.createElement("p");
 p2.textContent = "puntuacion : " + nTiradas;
 form.appendChild(p2);
 let p3 = document.createElement("p");
-p3.textContent = "INICIO : " + fechaInicio;
+p3.textContent = "INICIO : DIA/" + fechaInicio.getDate() + "/" + fechaInicio.getMonth() + "/" + fechaInicio.getFullYear() 
++ " hora/" + fechaInicio.getHours() + ":" + fechaInicio.getMinutes() + ":" +fechaInicio.getSeconds();
 form.appendChild(p3);
 let p4 = document.createElement("p");
-p4.textContent = "FIN : " + fechaFin;
+p4.textContent = "FIN : DIA/" + fechaFin.getDate() + "/" + fechaFin.getMonth() + "/" + fechaFin.getFullYear() 
++ " hora/" + fechaFin.getHours() + ":" + fechaFin.getMinutes() + ":" +fechaFin.getSeconds();
 form.appendChild(p4);
 }
 
