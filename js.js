@@ -15,7 +15,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } f
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-analytics.js";
 
 import {firebaseConfig} from "./firebase.js";
-import {getFirestore , collection} from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+import {getFirestore , collection, addDoc,query,where,getDocs} from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
 // Inicialiar la conexión Firebase
 const app = initializeApp(firebaseConfig);
@@ -24,20 +24,27 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
 //Inicializar base de datos
-const db = getFirestore(app);
+const db = getFirestore(app)
 
+
+/*db.collection("puntuacionmasAlta").get().then(function(querySnapshot){
+    querySnapshot.forEach(function(doc){
+        console.log(doc)
+    })
+});*/
 //const obtenerPuntuaciones = getDocs(collection(db,"puntuaciones DAW209"))
 
 ////////////////////////////
 /*LOGICA DEL JUEGO Y FORMULARIOS*/ 
+var recordActual = funcionBd;
 var correcto;
 var email;
 var password;
 var fechaInicio = 0;
 var fechaFin = 0;
 var movido = true;
-var casillaCofre  = Math.floor((Math.random() * 99) + 1);;
-var randomValue = 0;
+//var casillaCofre  = Math.floor((Math.random() * 99) + 1);;
+var casillaCofre  = 99
 var posibilidad1 = 0;
 var posibilidad2 = 0;
 var posibilidad3 = 0;
@@ -79,6 +86,7 @@ audioDado.src = "./recursos/sonidodado.mp3";
 function inicio(){
     document.body.appendChild(main);
     generarlogin();
+    funcionBd()
     /*document.body.appendChild(audio);
     document.body.appendChild(audioDado);
     audio.play();
@@ -117,34 +125,7 @@ function generarlogin(){
     btnLogin.type = "button"
     btnLogin.value = "INICIAR SESIÓN"
     btnLogin.addEventListener("click",()=>{
-        console.log("LOGIN");
-         email = document.getElementById("email").value;
-         password = document.getElementById('password').value;
-        const auth = getAuth();
-        if(email.includes('@')){
-        alert(`auth: ${auth} email: ${email}   password: ${password}`)
-        signInWithEmailAndPassword(auth,email, password)
-        .then(function(user) {
-            console.log("User logged in: ", user);
-        alert("User logged in: ", user);
-            main.textContent = "";
-            main.appendChild(audio);
-        audio.play();
-        console.log("Te has logueado con éxito");
-        fechaInicio = new Date();
-        generarTabla();
-        generarDado();
-            // Redirigir al panel de usuario o mostrar un mensaje
-        })
-    .catch(function(error) {
-        console.log("Error logging in: ", error);
-        alert("Error logging in: ", error)
-        // Mostrar mensaje de error
-    })
-}
-else{
-    alert("correo electrónico no válido")
-};
+        login();
         
     });
     contenedorLogin.appendChild(formulogin);
@@ -205,14 +186,45 @@ function generarRegistro(){
     formulogin.appendChild(btnLogin);
 }
 
+
+function login(){
+
+    console.log("LOGIN");
+        email = document.getElementById("email").value;
+        password = document.getElementById('password').value;
+        const auth = getAuth();
+        //alert(`auth: ${auth} email: ${email}   password: ${password}`)
+        signInWithEmailAndPassword(auth,email, password)
+        .then(function(user) {
+            console.log("User logged in: ", user);
+        alert("Loggeo existoso, para jugar pulsa sobre el dado y escoge una casilla");
+            main.textContent = "";
+            main.appendChild(audio);
+        audio.play();
+        console.log("Te has logueado con éxito");
+        fechaInicio = new Date();
+        let contador = document.createElement("header");
+        contador.id = "contador"
+        contador.textContent = " Has tirado " + nTiradas + " tiradas"
+        main.appendChild(contador);
+        generarTabla();
+        generarDado();
+            // Redirigir al panel de usuario o mostrar un mensaje
+        })
+    .catch(function(error) {
+        console.log("Error logging in: ", error);
+        alert("Error logging in: ", error)
+        // Mostrar mensaje de error
+    })
+}
+
 function registro() {
     console.log("REGISTER");
-  alert("REGISTER")
-    email = document.getElementById('email').value;;
-    password = document.getElementById('password').value;
+    var email = document.getElementById('email').value;;
+    var password = document.getElementById('password').value;
     const auth = getAuth();
-    alert(`auth: ${auth} email: ${email}   password: ${password}`)
-    if(email.includes('@')){
+    //alert(`auth: ${auth} email: ${email}   password: ${password}`)
+
         createUserWithEmailAndPassword(auth,email, password)
             .then(function(user) {
             console.log("User registered: ", user);
@@ -221,17 +233,19 @@ function registro() {
             return true;
     })
     .catch(function(error) {
-        console.log("Error registering: ", error);
-        // Mostar mensaje de error
-        alert("Error registering: ", error);
+        //Validacion de errores
+        if(error.code === 'auth/email-already-in-use'){
+            alert("El correo ya está en uso ","error");
+        }else if(error.code === 'auth/invalid-email'){
+            alert('Correo no válido',"error");
+        }else if(error.code === 'auth/weak-password'){
+            alert('La constraseña es débil',"error");
+        }else if(error.code){
+            alert('Error en el sistema',"error");
+        }
         return false;
     });
     }
-    else{
-        alert("correo electrçonico no válido")
-    }
-    
-}
 
 
 function generarTabla(){
@@ -277,222 +291,228 @@ function generarTabla(){
     casillas[casillaCofre].className = "casillaCofre";
 }
 
-function generarDado(){
-    let contador = document.createElement("header");
-    main.appendChild(contador);
 
+
+function girar(){
+    let dado = document.getElementById("dado")
+	dado.style.transitionDuration='0ms';
+	dado.style.transform='rotateX(360deg) rotateY(1080deg) rotateZ(360deg)';
+	setTimeout(tirar,10)
+}
+
+function tirar(){
+	let contador = document.getElementById("contador");
+    contador.textContent = "Has tirado " + nTiradas + " tiradas"
+
+    let dado = document.getElementById("dado")
+	dado.style.transitionDuration='3s';
+	
+
+	//calcular el nÃºmero
+    let numero = Math.floor(Math.random()*6)+1;                    
+    //hacer la rotaciÃ³n pertinente
+    switch(numero){
+        case 1: dado.style.transform='rotateX(90deg) rotateY(0deg) rotateZ(0deg)';break;
+        case 2: dado.style.transform='rotateX(-90deg) rotateY(0deg) rotateZ(0deg)';break;
+        case 3: dado.style.transform='rotateX(0deg) rotateY(90deg) rotateZ(0deg)';break;
+        case 4: dado.style.transform='rotateX(0deg) rotateY(270deg) rotateZ(0deg)';break;
+        case 5: dado.style.transform='rotateX(0deg) rotateY(0deg) rotateZ(0deg)';break;
+        case 6: dado.style.transform='rotateX(0deg) rotateY(180deg) rotateZ(10deg)';break;
+    }
+    setTimeout(function(){
+        pintarCasillas(numero);
+    },3100);
+    
+}
+
+function pintarCasillas(randomValue){
+posibilidad1 = casillaActual + randomValue;
+if(casillaActual> 0 && casillaActual< 9 && posibilidad1 > 9){
+    //posibilidad1 = posibilidad1 + 100;
+    posibilidad1 = 9;
+}
+else if(casillaActual> 10 && casillaActual< 19 && posibilidad1 > 19){
+    //posibilidad1 = posibilidad1 + 100;
+    posibilidad1 = 19;
+}
+else if(casillaActual> 20 && casillaActual< 29 && posibilidad1 > 29){
+    //posibilidad1 = posibilidad1 + 100;
+    posibilidad1 = 29;
+}
+else if(casillaActual> 30 && casillaActual< 39 && posibilidad1 > 39){
+    //posibilidad1 = posibilidad1 + 100;
+    posibilidad1 = 39;
+}
+else if(casillaActual> 40 && casillaActual< 49 && posibilidad1 > 49){
+    //posibilidad1 = posibilidad1 + 100;
+    posibilidad1 = 49;
+}
+else if(casillaActual> 50 && casillaActual< 59 && posibilidad1 > 59){
+    //posibilidad1 = posibilidad1 + 100;
+    posibilidad1 = 59;
+}
+else if(casillaActual> 60 && casillaActual< 69 && posibilidad1 > 69){
+    //posibilidad1 = posibilidad1 + 100;
+    posibilidad1 = 69;
+}
+else if(casillaActual> 70 && casillaActual< 79 && posibilidad1 > 79){
+    //posibilidad1 = posibilidad1 + 100;
+    posibilidad1 = 79;
+}
+else if(casillaActual> 80 && casillaActual< 89 && posibilidad1 > 89){
+    //posibilidad1 = posibilidad1 + 100;
+    posibilidad1 = 89;
+}
+else if(casillaActual> 90 && casillaActual< 99 && posibilidad1 > 99){
+    //posibilidad1 = posibilidad1 + 100;
+    posibilidad1 = 99;
+}
+posibilidad2 = casillaActual- randomValue;
+if(casillaActual> 0 && casillaActual< 9 && posibilidad2 < 0){
+    //posibilidad2 = posibilidad2 + 100;
+    posibilidad2 = 0
+}
+else if(casillaActual> 10 && casillaActual< 19 && posibilidad2 < 10){
+    //posibilidad2 = posibilidad2 + 100;
+    posibilidad2 = 10
+}
+else if(casillaActual> 20 && casillaActual< 29 && posibilidad2 < 20){
+    //posibilidad2 = posibilidad2 + 100;
+    posibilidad2 = 20
+}
+else if(casillaActual> 30 && casillaActual< 39 && posibilidad2 < 30){
+    //posibilidad2 = posibilidad2 + 100;
+    posibilidad2 = 30
+}
+else if(casillaActual> 40 && casillaActual< 49 && posibilidad2 < 40){
+    //posibilidad2 = posibilidad2 + 100;
+    posibilidad2 = 40
+}
+else if(casillaActual> 50 && casillaActual< 59 && posibilidad2 < 50){
+    //posibilidad2 = posibilidad2 + 100;
+    posibilidad2 = 50
+}
+else if(casillaActual> 60 && casillaActual< 69 && posibilidad2 < 60){
+    //posibilidad2 = posibilidad2 + 100;
+    posibilidad2 = 60
+}
+else if(casillaActual> 70 && casillaActual< 79 && posibilidad2 < 70){
+    //posibilidad2 = posibilidad2 + 100;
+    posibilidad2 = 70
+}
+else if(casillaActual> 80 && casillaActual< 89 && posibilidad2 < 80){
+    //posibilidad2 = posibilidad2 + 100;
+    posibilidad2 = 80
+}
+else if(casillaActual> 90 && casillaActual< 99 && posibilidad2 < 90){
+    //posibilidad2 = posibilidad2 + 100;
+    posibilidad2 = 90
+}
+
+posibilidad3 = casillaActual+ (randomValue * 10);
+while(posibilidad3 > 100){
+    posibilidad3 = posibilidad3 - 10
+}
+
+posibilidad4 = casillaActual- (randomValue * 10);
+while(posibilidad4 < 0){
+    posibilidad4 = posibilidad4 + 10
+}
+if(casillaActual == 0 || casillaActual == 10 || casillaActual == 20
+    || casillaActual == 30 || casillaActual == 40 || casillaActual == 50
+    || casillaActual == 60 || casillaActual == 70 || casillaActual == 80
+    || casillaActual == 90){
+        posibilidad2 = null;
+}
+
+if(casillaActual == 9 || casillaActual == 19 || casillaActual == 29
+    || casillaActual == 39 || casillaActual == 49 || casillaActual == 59
+    || casillaActual == 69 || casillaActual == 79 || casillaActual == 89
+    || casillaActual == 99){
+        posibilidad1 = null;
+}
+
+
+let tabla = document.getElementsByTagName("td");
+
+for ( let i = 0 ; i < tabla.length; i++) {
+    if(tabla[i].getAttribute('id') == casillaActual){
+        tabla[i].className = "casillaActual"
+    }
+    else if ((tabla[i].getAttribute('id') == posibilidad1 || tabla[i].getAttribute('id')== posibilidad2 || tabla[i].getAttribute('id') == posibilidad3 || tabla[i].getAttribute('id') == posibilidad4 )){
+        if(tabla[i].className != "casillaUsada"){
+            tabla[i].setEnabled = true;
+            tabla[i].className = "casillaPuedeUsarse"
+        }
+        
+    }else if(tabla[i].getAttribute('id') != casillaActual){
+
+        if(tabla[i].className != "casillaUsada" ){
+            tabla[i].setEnabled = false;
+            tabla[i].className = " "
+        }
+        
+        if(tabla[i].getAttribute('id') == casillaCofre){
+            tabla[i].className = "casillaCofre";
+        }
+    }
+}}
+function generarDado(){
+    
     let contenedorDado = document.createElement("div");
     contenedorDado.className += " container ";
     
     let dado = document.createElement("div");
-    dado.className += " cube "
+    dado.id = "dado"
+    dado.className += " dado "
     const cube = dado;
     cube.addEventListener('click', () => {
     if(movido){
         movido = false;
         nTiradas++;
-        cube.style.transition = '';
-        cube.style.transform = `translateY(400px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`;
-        setTimeout(() => {
-            cube.style.transition = `transform ${time}s`;
-            randomValue = Math.floor((Math.random() * 6) + 1);
-            console.log(`randomValue: ${randomValue}` );
-            audioDado.play();
-            contador.textContent = "Has lanzado el dado " + nTiradas + " veces ";
-            switch(randomValue) {
-                case 1:             
-                    cube.style.transform = `translateY(400px) rotateX(3600deg) rotateY(3600deg) rotateZ(3600deg)`;
-                    break;
-                case 2:
-                    cube.style.transform = `translateY(400px) rotateX(4410deg) rotateY(3600deg) rotateZ(3600deg)`;
-                    break;
-                case 3:
-                    cube.style.transform = `translateY(400px) rotateX(3600deg) rotateY(4410deg) rotateZ(3600deg)`;
-                    break;
-                case 4:
-                    cube.style.transform = `translateY(400px) rotateX(3600deg) rotateY(2430deg) rotateZ(3600deg)`;
-                    break;
-                case 5:
-                    cube.style.transform = `translateY(400px) rotateX(2430deg) rotateY(3600deg) rotateZ(3600deg)`;
-                    break;
-                case 6:
-                    cube.style.transform = `translateY(400px) rotateX(3600deg) rotateY(1980deg) rotateZ(3600deg)`;
-                    break;
-            };
-            
-        posibilidad1 = casillaActual + randomValue;
-        if(casillaActual> 0 && casillaActual< 9 && posibilidad1 > 9){
-            //posibilidad1 = posibilidad1 + 100;
-            posibilidad1 = 9;
-        }
-        else if(casillaActual> 10 && casillaActual< 19 && posibilidad1 > 19){
-            //posibilidad1 = posibilidad1 + 100;
-            posibilidad1 = 19;
-        }
-        else if(casillaActual> 20 && casillaActual< 29 && posibilidad1 > 29){
-            //posibilidad1 = posibilidad1 + 100;
-            posibilidad1 = 29;
-        }
-        else if(casillaActual> 30 && casillaActual< 39 && posibilidad1 > 39){
-            //posibilidad1 = posibilidad1 + 100;
-            posibilidad1 = 39;
-        }
-        else if(casillaActual> 40 && casillaActual< 49 && posibilidad1 > 49){
-            //posibilidad1 = posibilidad1 + 100;
-            posibilidad1 = 49;
-        }
-        else if(casillaActual> 50 && casillaActual< 59 && posibilidad1 > 59){
-            //posibilidad1 = posibilidad1 + 100;
-            posibilidad1 = 59;
-        }
-        else if(casillaActual> 60 && casillaActual< 69 && posibilidad1 > 69){
-            //posibilidad1 = posibilidad1 + 100;
-            posibilidad1 = 69;
-        }
-        else if(casillaActual> 70 && casillaActual< 79 && posibilidad1 > 79){
-            //posibilidad1 = posibilidad1 + 100;
-            posibilidad1 = 79;
-        }
-        else if(casillaActual> 80 && casillaActual< 89 && posibilidad1 > 89){
-            //posibilidad1 = posibilidad1 + 100;
-            posibilidad1 = 89;
-        }
-        else if(casillaActual> 90 && casillaActual< 99 && posibilidad1 > 99){
-            //posibilidad1 = posibilidad1 + 100;
-            posibilidad1 = 99;
-        }
-        posibilidad2 = casillaActual- randomValue;
-        if(casillaActual> 0 && casillaActual< 9 && posibilidad2 < 0){
-            //posibilidad2 = posibilidad2 + 100;
-            posibilidad2 = 0
-        }
-        else if(casillaActual> 10 && casillaActual< 19 && posibilidad2 < 10){
-            //posibilidad2 = posibilidad2 + 100;
-            posibilidad2 = 10
-        }
-        else if(casillaActual> 20 && casillaActual< 29 && posibilidad2 < 20){
-            //posibilidad2 = posibilidad2 + 100;
-            posibilidad2 = 20
-        }
-        else if(casillaActual> 30 && casillaActual< 39 && posibilidad2 < 30){
-            //posibilidad2 = posibilidad2 + 100;
-            posibilidad2 = 30
-        }
-        else if(casillaActual> 40 && casillaActual< 49 && posibilidad2 < 40){
-            //posibilidad2 = posibilidad2 + 100;
-            posibilidad2 = 40
-        }
-        else if(casillaActual> 50 && casillaActual< 59 && posibilidad2 < 50){
-            //posibilidad2 = posibilidad2 + 100;
-            posibilidad2 = 50
-        }
-        else if(casillaActual> 60 && casillaActual< 69 && posibilidad2 < 60){
-            //posibilidad2 = posibilidad2 + 100;
-            posibilidad2 = 60
-        }
-        else if(casillaActual> 70 && casillaActual< 79 && posibilidad2 < 70){
-            //posibilidad2 = posibilidad2 + 100;
-            posibilidad2 = 70
-        }
-        else if(casillaActual> 80 && casillaActual< 89 && posibilidad2 < 80){
-            //posibilidad2 = posibilidad2 + 100;
-            posibilidad2 = 80
-        }
-        else if(casillaActual> 90 && casillaActual< 99 && posibilidad2 < 90){
-            //posibilidad2 = posibilidad2 + 100;
-            posibilidad2 = 90
-        }
-
-        posibilidad3 = casillaActual+ (randomValue * 10);
-        while(posibilidad3 > 100){
-            posibilidad3 = posibilidad3 - 10
-        }
-
-        posibilidad4 = casillaActual- (randomValue * 10);
-        while(posibilidad4 < 0){
-            posibilidad4 = posibilidad4 + 10
-        }
-        if(casillaActual == 0 || casillaActual == 10 || casillaActual == 20
-            || casillaActual == 30 || casillaActual == 40 || casillaActual == 50
-            || casillaActual == 60 || casillaActual == 70 || casillaActual == 80
-            || casillaActual == 90){
-                posibilidad2 = null;
-        }
-
-        if(casillaActual == 9 || casillaActual == 19 || casillaActual == 29
-            || casillaActual == 39 || casillaActual == 49 || casillaActual == 59
-            || casillaActual == 69 || casillaActual == 79 || casillaActual == 89
-            || casillaActual == 99){
-                posibilidad1 = null;
-        }
-
-
-        let tabla = document.getElementsByTagName("td");
-        
-        for ( let i = 0 ; i < tabla.length; i++) {
-            if(tabla[i].getAttribute('id') == casillaActual){
-                tabla[i].className = "casillaActual"
-            }
-            else if ((tabla[i].getAttribute('id') == posibilidad1 || tabla[i].getAttribute('id')== posibilidad2 || tabla[i].getAttribute('id') == posibilidad3 || tabla[i].getAttribute('id') == posibilidad4 )){
-                if(tabla[i].className != "casillaUsada"){
-                    tabla[i].setEnabled = true;
-                    tabla[i].className = "casillaPuedeUsarse"
-                }
-                
-            }else if(tabla[i].getAttribute('id') != casillaActual){
-
-                if(tabla[i].className != "casillaUsada" ){
-                    tabla[i].setEnabled = false;
-                    tabla[i].className = " "
-                }
-                
-                if(tabla[i].getAttribute('id') == casillaCofre){
-                    tabla[i].className = "casillaCofre";
-                }
-            }
-
-
-        }
-        }, time * 10);
-    }
-
-    });
+        girar();
+    }});
     for(let i = 1 ; i <= 6 ; i++){
         let cara  = document.createElement("div");
-        cara.className = "cube-face"
+        cara.className = "cara"
+        let img = document.createElement("img");
         switch(i){
             case 1:
-                cara.className += " front "
+                cara.className += " top ";
+                img.src = "./recursos/dado1.png"
+                img.alt = i;
             break;
             case 2:
                 cara.className += " bottom "
+                img.src = "./recursos/dado2.png"
+                img.alt = i;
             break;
             case 3:
                 cara.className += " left "
+                img.src = "./recursos/dado3.png"
+                img.alt = i;
             break;
             case 4:
                 cara.className += " right "
+                img.src = "./recursos/dado4.png"
+                img.alt = i;
             break;
             case 5:
-                cara.className += " top "
+                cara.className += " front "
+                img.src = "./recursos/dado5.png"
+                img.alt = i;
             break;
             case 6:
                 cara.className += " back "
+                img.src = "./recursos/dado6.png"
+                img.alt = i;
             break;
             default:
         console.log(`Error`);
-        }
-
-        let dentro = document.createElement("div");
-        dentro.className = "inside";
         
-        
-        for(let j = 1 ; j <= i ; j++){
-            let span = document.createElement("span");
-            span.className = "dot"
-            dentro.appendChild(span);
         }
-        cara.appendChild(dentro);
+        
+        cara.appendChild(img)
         dado.appendChild(cara)
     }
 
@@ -541,7 +561,8 @@ audioVictoria.autoplay = true
 document.body.appendChild(audioVictoria);
 audio.play();
 fechaFin = new Date();
-/*db.ref('/recordPuntuacion').set({
+/*
+db.ref('/recordPuntuacion').set({
     nombre: email,
     puntuacion:nTiradas,
     horaInicio:fechaInicio,
@@ -566,6 +587,43 @@ let p4 = document.createElement("p");
 p4.textContent = "FIN : DIA/" + fechaFin.getDate() + "/" + fechaFin.getMonth() + "/" + fechaFin.getFullYear() 
 + " hora/" + fechaFin.getHours() + ":" + fechaFin.getMinutes() + ":" +fechaFin.getSeconds();
 form.appendChild(p4);
+
+funcionBd(nTiradas,form,email,fechaInicio,fechaFin);
+}
+
+
+async function funcionBd(nTiradas,form,email,fechaInicio,fechaFin){
+    console.log("Estoy en el evento");
+    const users = collection(db, "puntuacionmasAlta");
+    const consulta = query(users, where("nombre", "!=", ""));
+    const querySnapshot = await getDocs(consulta);
+    querySnapshot.forEach((doc) => { 
+        let record = doc.data().tiradas;
+        console.log(record)
+        if(nTiradas < parseInt(record)){
+                console.log("nuevo record")
+                let p5 = document.createElement("p");
+                p5.textContent = "Enhorabuena has batido el record de " + record + " tiradas";
+                form.appendChild(p5)    
+                db.ref('puntuacionmasAlta').set({
+                    nombre: email,
+                    tiradas: nTiradas,
+                    fechaInicio:"INICIO : DIA/" + fechaInicio.getDate() + "/" + fechaInicio.getMonth() + "/" + fechaInicio.getFullYear() 
+                    + " hora/" + fechaInicio.getHours() + ":" + fechaInicio.getMinutes() + ":" +fechaInicio.getSeconds(),
+                    fechaFin : "DIA/" + fechaFin.getDate() + "/" + fechaFin.getMonth() + "/" + fechaFin.getFullYear() 
+                    + " hora/" + fechaFin.getHours() + ":" + fechaFin.getMinutes() + ":" +fechaFin.getSeconds()
+                })
+        }
+        return parseInt(record, 10);
+        
+        /*if(record < 200){
+            let mensajeWin = "Héroe, has establecido un récord de tiradas con "+tiradas+"tiradas";
+            alert(mensajeWin);
+        }else{
+        let mensajeLose = "Récord no superado, el actual récord es "+recordTiradas;
+        alert(mensajeLose);*/
+        
+    })
 }
 
 
