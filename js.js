@@ -8,11 +8,14 @@
 
 // Your web app's Firebase configuration
 // 
+
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-analytics.js";
 
 import {firebaseConfig} from "./firebase.js";
+import {getFirestore , collection} from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
 // Inicialiar la conexión Firebase
 const app = initializeApp(firebaseConfig);
@@ -20,11 +23,18 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase
 const analytics = getAnalytics(app);
 
+//Inicializar base de datos
+const db = getFirestore(app);
+
+//const obtenerPuntuaciones = getDocs(collection(db,"puntuaciones DAW209"))
+
 ////////////////////////////
 /*LOGICA DEL JUEGO Y FORMULARIOS*/ 
 var correcto;
-
-
+var email;
+var password;
+var fechaInicio = 0;
+var fechaFin = 0;
 var movido = true;
 var casillaCofre  = Math.floor((Math.random() * 99) + 1);;
 var randomValue = 0;
@@ -36,7 +46,6 @@ var nTiradas = 0;
 var casillaActual = 0;
 const time = 2;
 const main = document.createElement("main");
-
 let ncancion = Math.floor((Math.random() * 6) + 1);
 const audio = document.createElement("audio");
     //audio.controls = true;
@@ -81,6 +90,11 @@ function generarlogin(){
     let contenedorLogin = document.createElement("div");
     main.appendChild(contenedorLogin);
     let formulogin = document.createElement("form");
+    let h1 = document.createElement("h1");
+    h1.textContent = "iniciar sesion";
+    formulogin.appendChild(h1);
+    let hr = document.createElement("hr");
+    formulogin.appendChild(hr)
     let labelUsuario = document.createElement("label");
     let inputUsuario = document.createElement("input");
     labelUsuario.textContent = "Nombre de Usuario";
@@ -92,7 +106,7 @@ function generarlogin(){
     labelContra.textContent = "Contraseña";
     inputContra.type = "password";
     inputContra.id = "password"
-    inputContra.placeholder = "Introduce un nombre de usuario";
+    inputContra.placeholder = "Introduce una contraseña";
     let btnRegistro = document.createElement("input");
     btnRegistro.type = "button";
     btnRegistro.value = "REGISTRATE"
@@ -104,8 +118,8 @@ function generarlogin(){
     btnLogin.value = "INICIAR SESIÓN"
     btnLogin.addEventListener("click",()=>{
         console.log("LOGIN");
-        var email = document.getElementById("email").value;
-        var password = document.getElementById('password').value;
+         email = document.getElementById("email").value;
+         password = document.getElementById('password').value;
         const auth = getAuth();
         if(email.includes('@')){
         alert(`auth: ${auth} email: ${email}   password: ${password}`)
@@ -117,6 +131,7 @@ function generarlogin(){
             main.appendChild(audio);
         audio.play();
         console.log("Te has logueado con éxito");
+        fechaInicio = new Date();
         generarTabla();
         generarDado();
             // Redirigir al panel de usuario o mostrar un mensaje
@@ -146,7 +161,13 @@ function generarRegistro(){
     main.textContent = "";
     let contenedorLogin = document.createElement("div");
     main.appendChild(contenedorLogin);
+    
     let formulogin = document.createElement("form");
+    let h1 = document.createElement("h1");
+    h1.textContent = "REGISTRARSE";
+    formulogin.appendChild(h1);
+    let hr = document.createElement("hr");
+    formulogin.appendChild(hr)
     let labelUsuario = document.createElement("label");
     let inputUsuario = document.createElement("input");
     labelUsuario.textContent = "Nombre de Usuario";
@@ -158,7 +179,7 @@ function generarRegistro(){
     labelContra.textContent = "Contraseña";
     inputContra.type = "password";
     inputContra.id = "password"; 
-    inputContra.placeholder = "Introduce un nombre de usuario";
+    inputContra.placeholder = "Introduce una contraseña";
     let btnRegistro = document.createElement("input");
     btnRegistro.type = "button";
     btnRegistro.value = "REGISTRATE"
@@ -180,15 +201,15 @@ function generarRegistro(){
     formulogin.appendChild(inputUsuario);
     formulogin.appendChild(labelContra);
     formulogin.appendChild(inputContra);
-    formulogin.appendChild(btnLogin);
     formulogin.appendChild(btnRegistro);
+    formulogin.appendChild(btnLogin);
 }
 
 function registro() {
     console.log("REGISTER");
   alert("REGISTER")
-    var email = document.getElementById('email').value;;
-    var password = document.getElementById('password').value;
+    email = document.getElementById('email').value;;
+    password = document.getElementById('password').value;
     const auth = getAuth();
     alert(`auth: ${auth} email: ${email}   password: ${password}`)
     if(email.includes('@')){
@@ -248,7 +269,7 @@ function generarTabla(){
     tabla.style.backgroundSize = "auto";*/
     contenedorTabla.style.width = "50vw";
     contenedorTabla.style.height = "50vh";
-    document.body.appendChild(contenedorTabla);
+    main.appendChild(contenedorTabla);
     
     let casillas = document.getElementsByTagName("td");
     //casillas[0].appendChild(imagen);
@@ -477,7 +498,7 @@ function generarDado(){
 
     
     contenedorDado.appendChild(dado);
-    document.body.appendChild(contenedorDado);
+    main.appendChild(contenedorDado);
 }
 
 
@@ -509,10 +530,9 @@ function moverJugador(eve){
 
 
 function victoria(){
-    console.log("Has ganado en " + nTiradas);
- //audio = document.createElement("audio");
+main.textContent ="";    
+console.log("Has ganado en " + nTiradas);
 audio.preload = "auto";
-//audio.src = "https://manzdev.github.io/codevember2017/assets/eye-tiger.mp3";
 audio.src = "./recursos/victory.mp3"
 
 let audioVictoria = document.createElement("audio");
@@ -520,7 +540,30 @@ audioVictoria.src = "./recursos/looking_cool_joker.mp3";
 audioVictoria.autoplay = true
 document.body.appendChild(audioVictoria);
 audio.play();
-
+fechaFin = new Date();
+/*db.ref('/recordPuntuacion').set({
+    nombre: email,
+    puntuacion:nTiradas,
+    horaInicio:fechaInicio,
+    horaFin: fechaFin     
+})*/
+let form = document.createElement("form");
+main.appendChild(form);
+let h1 = document.createElement("h1");
+h1.textContent = "ENHORABUENA";
+form.appendChild(h1);
+let p = document.createElement("p");
+p.textContent = "nombre : " + email;
+form.appendChild(p)
+let p2 = document.createElement("p");
+p2.textContent = "puntuacion : " + nTiradas;
+form.appendChild(p2);
+let p3 = document.createElement("p");
+p3.textContent = "INICIO : " + fechaInicio;
+form.appendChild(p3);
+let p4 = document.createElement("p");
+p4.textContent = "FIN : " + fechaFin;
+form.appendChild(p4);
 }
 
 
