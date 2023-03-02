@@ -27,24 +27,17 @@ const analytics = getAnalytics(app);
 const db = getFirestore(app)
 
 
-/*db.collection("puntuacionmasAlta").get().then(function(querySnapshot){
-    querySnapshot.forEach(function(doc){
-        console.log(doc)
-    })
-});*/
-//const obtenerPuntuaciones = getDocs(collection(db,"puntuaciones DAW209"))
-
 ////////////////////////////
 /*LOGICA DEL JUEGO Y FORMULARIOS*/ 
-var recordActual = funcionBd;
+
 var correcto;
 var email;
 var password;
 var fechaInicio = 0;
 var fechaFin = 0;
 var movido = true;
-//var casillaCofre  = Math.floor((Math.random() * 99) + 1);;
-var casillaCofre  = 99
+var casillaCofre  = Math.floor((Math.random() * 99) + 1);;
+//var casillaCofre  = 99
 var posibilidad1 = 0;
 var posibilidad2 = 0;
 var posibilidad3 = 0;
@@ -55,23 +48,23 @@ const time = 2;
 const main = document.createElement("main");
 let ncancion = Math.floor((Math.random() * 3) + 1);
 const audio = document.createElement("audio");
-    
-    
+audio.controls = true
 const audioDado = document.createElement("audio");
 audioDado.src = "./recursos/sonidodado.mp3";
 
-
+/*Funcion que se ejecuta cuando carga la ventana generando el formulario de loggeo,
+una etiqueta de audio y el record */
 function inicio(){
     document.body.appendChild(main);
     generarlogin();
-    funcionBd();
     document.body.appendChild(audio);
     audio.src = "./recursos/wuguwoot.mp3";
     audio.autoplay;
     audio.play()
 }
 
-
+/*Funcion que genera en sobre el elemento main un formulario con los campos de correo y contraseña y dos botones uno para loggearse e iniciar el juego 
+y otro para generar el formulario de registro*/
 function generarlogin(){
     main.textContent = "";
     let contenedorLogin = document.createElement("div");
@@ -115,7 +108,8 @@ function generarlogin(){
     formulogin.appendChild(btnLogin);
     formulogin.appendChild(btnRegistro);
 }
-
+/*Funcion que vacia la etiqueta main y en su lugar pone un formulario registro con dos campos para el correo electrónico y otro de contraseña con dos botones uno para generar
+el formulario de loggin y otro para registrar en la base de datos el nuevo usuario*/
 function generarRegistro(){
     main.textContent = "";
     main.textContent = "";
@@ -165,14 +159,14 @@ function generarRegistro(){
     formulogin.appendChild(btnLogin);
 }
 
-
+/*Funcion que comprueba los datos introducidos en el formulario de loggin si las credenciales se asemejan a la de una cuenta registrada en la base de datos
+empieza el juego sino devuelve una alerta con el error correspondiente*/
 function login(){
 
     console.log("LOGIN");
         email = document.getElementById("email").value;
         password = document.getElementById('password').value;
         const auth = getAuth();
-        //alert(`auth: ${auth} email: ${email}   password: ${password}`)
         signInWithEmailAndPassword(auth,email, password)
         .then(function(user) {
             console.log("User logged in: ", user);
@@ -203,24 +197,34 @@ function login(){
             // Redirigir al panel de usuario o mostrar un mensaje
         })
     .catch(function(error) {
-        console.log("Error logging in: ", error);
-        alert("Error logging in: ", error)
-        // Mostrar mensaje de error
+       //Validacion de errores
+       if(error.code === 'auth/email-already-in-use'){
+        alert("El correo ya está en uso ","error");
+    }else if(error.code === 'auth/invalid-email'){
+        alert('Correo no válido',"error");
+    }else if(error.code == 'auth/wrong-password'){
+        alert('Contraseña errónea');
+    }else if(error.code == 'auth/user-not-found'){
+        alert('El usuario no existe, por favor, crea una cuenta dandoa l botón registrate')
+    }
+    else{
+        alert(error.code)
+    }
+    return false;
     })
 }
-
+/*Funcion que comprueba  las credenciales ingresadas en el formulario de registro si son correctas crea el usuario en la base de datos y manda al usuario
+a la pantalla de loggin sino mostrará una alerta con el error correspondiente*/
 function registro() {
     console.log("REGISTER");
     var email = document.getElementById('email').value;;
     var password = document.getElementById('password').value;
     const auth = getAuth();
-    //alert(`auth: ${auth} email: ${email}   password: ${password}`)
 
         createUserWithEmailAndPassword(auth,email, password)
             .then(function(user) {
-            console.log("User registered: ", user);
-            // Redirigir al panel de usuario o mostrar un mensaje
-            alert("User registered: ", user)
+                alert('TE HAS REGISTRADO CON ÉXITO');
+                generarlogin();
             return true;
     })
     .catch(function(error) {
@@ -238,7 +242,9 @@ function registro() {
     });
     }
 
-
+/*Funcion que genera el tablero de juego de juego siendo una tabla de 10*10, cuando se termina de generar la tabla asigna a la primera casilla la clase casillaActual
+y al cofre la clase casillaCofre, ademas se les asigna a cada casilla el un evenlistener que cuando se realiza un click sobre la casilla si su clase es puedeUsarse
+desencadenará el evento moverJugador*/
 function generarTabla(){
     let idtabla = 0;
     let contenedorTabla = document.createElement("div");
@@ -280,7 +286,7 @@ function generarTabla(){
 }
 
 
-
+/*Funcion que  muestra la animacion en la que gira el dado y despues irá a la funcion tirar */
 function girar(){
     let dado = document.getElementById("dado")
     audioDado.play();
@@ -288,7 +294,7 @@ function girar(){
 	dado.style.transform='rotateX(360deg) rotateY(1080deg) rotateZ(360deg)';
 	setTimeout(tirar,10)
 }
-
+/*Funcion que muestra la cara del dado correspondiente al número que le ha tocado, y llama a la funcion pintarCasillas */
 function tirar(){
 	let contador = document.getElementById("contador");
     contador.textContent = "Has realizado " + nTiradas + " tirada(s)"
@@ -313,7 +319,8 @@ function tirar(){
     },3100);
     
 }
-
+/*Esta funcion primero calcula a que casillas puede desplazarse el jugador, si algun numero se sale de los limites se le asignara la casilla mas cercana una vez se calculan las posibilidades
+se le asigna a las casillas posibles la clase 'casillaPuedeUsarse'*/
 function pintarCasillas(randomValue){
 posibilidad1 = casillaActual + randomValue;
 if(casillaActual> 0 && casillaActual< 9 && posibilidad1 > 9){
@@ -446,6 +453,9 @@ for ( let i = 0 ; i < tabla.length; i++) {
         }
     }
 }}
+
+/*Funcion que generar un contenedor que contiene las diferentes caras del dado junto a cada cara se crea
+un elemento img que contiene el png del número  */
 function generarDado(){
     
     let contenedorDado = document.createElement("div");
@@ -510,7 +520,9 @@ function generarDado(){
     main.appendChild(contenedorDado);
 }
 
-
+/*Funcion que buscar dentro del tablero el elemento seleccionado, el elemento que tenia previamente la casilla del jugador se le asigna la clase casillaUsada y
+la casilla seleccionada paasa  a tener la clase casillaActual , si la casilla a la que se desplaza el jugador coincide con la casilla del cofre se desencadenará 
+la funcion de victoria*/
 function moverJugador(eve){
     let tablero = document.getElementsByTagName("td");
     if(!movido){
@@ -537,7 +549,7 @@ function moverJugador(eve){
 }
 
 
-
+/*Funcion que genera un formulario con los datos de la partida ademas se llama a funcionBd para comprobar si el usuario ha establecido un nuevo récord */
 function victoria(){
 main.textContent ="";    
 let audio = document.createElement("audio")
@@ -571,7 +583,8 @@ form.appendChild(p4);
 funcionBd(nTiradas,form,email,fechaInicio,fechaFin);
 }
 
-
+/*Funcion que primero obtiene de la base de datos remota el valord del record, si el record ha sido superado los datos del record anterior serán actualizados con
+los datos del record actual, ademas se añadirá al formulario un mensaje avisando al usuario que ha establecido el record y el numero del récord anterior */
 async function funcionBd(nTiradas,form,email,fechaInicio,fechaFin){
     let record = 0;
     console.log("Estoy en el evento");
@@ -597,7 +610,7 @@ async function funcionBd(nTiradas,form,email,fechaInicio,fechaFin){
         document.body.appendChild(audioVictoria);
 
         const washingtonRef = doc(db, "puntuacionmasAlta", "puntuacionMasAlta");
-        // Set the "capital" field of the city 'DC'
+
         await updateDoc(washingtonRef, {
             nombre: email,
             tiradas: nTiradas,

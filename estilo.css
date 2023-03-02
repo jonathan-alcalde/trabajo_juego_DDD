@@ -14,6 +14,7 @@ form{
     box-sizing: border-box;
     border-radius: 10%;
     background:whitesmoke;
+    border: 5px solid #a2282a;
 }
 
 form h1{
@@ -38,6 +39,7 @@ form input[type=button]{
     padding:  0 50px ;
     box-sizing: border-box;
     border-radius: 10%;
+    border: 2px solid red;
 }
 
 form input[type=button]:hover{
@@ -135,7 +137,9 @@ img{
 }
 
 body{
-    background-image: url(./recursos/pxfuel.jpg);
+    background-image: url(./recursos/ootroofooondooo.png);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 main{
     width: 200vh;
