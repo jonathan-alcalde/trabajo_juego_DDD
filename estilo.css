@@ -44,7 +44,9 @@ form input[type=button]:hover{
     background: red
 }
 
-
+header{
+    color: whitesmoke;
+}
 
 @font-face {
     font-family: arsenal;
@@ -60,8 +62,10 @@ form input[type=button]:hover{
 }*/
 
 .casillaActual{
-    background-image:url(./recursos/joker.png);
+    /*background-image:url(./recursos/joker.png);*/
     background-size:     cover;                      /* <------ */
+    /*background-image:url(./recursos/R.jpeg);*/
+    background-image:url(./recursos/r2.png);
     background-repeat:   no-repeat;
     background-position: center center;
 }
@@ -74,7 +78,8 @@ form input[type=button]:hover{
 }
 
 .casillaPuedeUsarse{
-    background-image:url(./recursos/usarse.jpg);
+    /*background-image:url(./recursos/usarse.jpg);*/
+    background-image:url(./recursos/R\ \(1\).jpeg);
     background-size:     cover;                      /* <------ */
     background-repeat:   no-repeat;
     background-position: center center;
@@ -103,26 +108,27 @@ img{
     height:100%;
 }
 #contenedorTabla{
-    /*display: flex;
+    display: flex;
     justify-content: center;
     left: 50%;
-    margin-left: 300px;
-    top: 50%;
+    margin-left: 25%;
+    margin-bottom: 150px;
+    /*top: 50%;
     margin-top: 100px;*/
     
 }
 
 .container {
-    width: 400px;
-    height: 400px;
+    width: 150px;
+    height: 100%;
     margin: 0 auto;
     position: relative;
     perspective: 1200px;
-    /*top: -100px;*/
+    top: 150px;
 }
 
 .cube {
-    transform: translateY(400px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    /*transform: translateY(400px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);*/
     width: 100%;
     height: 100%;
     transform-style: preserve-3d;
@@ -132,169 +138,31 @@ body{
     background-image: url(./recursos/pxfuel.jpg);
 }
 main{
-    width: 100vh;
+    width: 200vh;
     height: 50vw;
     background-repeat: no-repeat;
     background-position: center center;
 }
 
-main form{
-    
-}
-.cube-face {
-    position: absolute; 
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 60px;
-    background: white;
-
-    border: black 1px solid;
-    border-radius: 5%;
+.dado{
+	position: relative;
+	width: 200px;
+	height: 200px;
+	transform-style: preserve-3d;
+  transition-timing-function: cubic-bezier(.21,1.41,.99,.78);	
 }
 
-.front {
-    transform: translateZ(200px);
+.cara{
+    background: #000000;
+	position: absolute;
+	height: 200px;
+	width: 200px;
+    border: 5px solid red;
 }
 
-.back {
-    transform: rotateY(180deg) translateZ(200px);
-}
-
-.left {
-    transform: rotateY(-90deg) translateZ(200px);
-}
-
-.right {
-    transform: rotateY(90deg) translateZ(200px);
-}
-
-.top {
-    transform: rotateX(90deg) translateZ(200px);
-}
-
-.bottom {
-    transform: rotateX(-90deg) translateZ(200px);
-}
-
-.inside {
-    display: grid;
-    grid-template-columns: repeat(3, 80px);
-    grid-template-rows: repeat(3, 80px);
-}
-
-.dot {
-    height: 70px;
-    width: 70px;
-    background-color: black;
-    border-radius: 50%;
-    justify-self: center;
-    align-self: center;
-}
-
-.front .inside .dot {
-    grid-row: 2;
-    grid-column: 2;
-}
-
-.back .inside .dot:nth-child(1) {
-    grid-row: 1;
-    grid-column: 1;
-}
-
-.back .inside .dot:nth-child(2) {
-    grid-row: 1;
-    grid-column: 2;
-}
-
-.back .inside .dot:nth-child(3) {
-    grid-row: 1;
-    grid-column: 3;
-}
-
-.back .inside .dot:nth-child(4) {
-    grid-row: 3;
-    grid-column: 1;
-}
-
-.back .inside .dot:nth-child(5) {
-    grid-row: 3;
-    grid-column: 2;
-}
-
-.back .inside .dot:nth-child(6) {
-    grid-row: 3;
-    grid-column: 3;
-}
-
-.left .inside .dot:nth-child(1) {
-    grid-row: 1;
-    grid-column: 3;
-}
-
-.left .inside .dot:nth-child(2) {
-    grid-row: 2;
-    grid-column: 2;
-}
-
-.left .inside .dot:nth-child(3) {
-    grid-row: 3;
-    grid-column: 1;
-}
-
-.right .inside .dot:nth-child(1) {
-    grid-row: 1;
-    grid-column: 1;
-}
-
-.right .inside .dot:nth-child(2) {
-    grid-row: 1;
-    grid-column: 3;
-}
-
-.right .inside .dot:nth-child(3) {
-    grid-row: 3;
-    grid-column: 1;
-}
-
-.right .inside .dot:nth-child(4) {
-    grid-row: 3;
-    grid-column: 3;
-}
-
-.top .inside .dot:nth-child(1) {
-    grid-row: 1;
-    grid-column: 1;
-}
-
-.top .inside .dot:nth-child(2) {
-    grid-row: 1;
-    grid-column: 3;
-}
-
-.top .inside .dot:nth-child(3) {
-    grid-row: 2;
-    grid-column: 2;
-}
-
-.top .inside .dot:nth-child(4) {
-    grid-row: 3;
-    grid-column: 1;
-}
-
-.top .inside .dot:nth-child(5) {
-    grid-row: 3;
-    grid-column: 3;
-}
-
-.bottom .inside .dot:nth-child(1) {
-    grid-row: 1;
-    grid-column: 3;
-}
-
-.bottom .inside .dot:nth-child(2) {
-    grid-row: 3;
-    grid-column: 1;
-}
+.front{transform: translateZ(100px);}
+.back{transform: rotateY(180deg) translateZ(100px);}
+.top{transform: rotateX(-90deg) translateZ(100px);}
+.bottom{transform: rotateX(90deg) translateZ(100px);}
+.left{transform: rotateY(-90deg) translateZ(100px);}
+.right{transform: rotateY(90deg) translateZ(100px);}
