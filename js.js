@@ -548,7 +548,6 @@ document.body.appendChild(audio);
 
 audio.play();
 fechaFin = new Date();
-
 let form = document.createElement("form");
 main.appendChild(form);
 let h1 = document.createElement("h1");
